@@ -17,21 +17,10 @@ from validator import (
 
 
 st.set_page_config(page_title="RecallMate CSV validator", page_icon="RM", layout="wide")
-st.logo("images/logo.png", size='large')
 st.title(":material/verified: RecallMate CSV validator")
 st.caption("Clean recall lists before sending patients vaccination, blood test, or review messages.")
 
 uploaded_file = st.file_uploader("Upload a recall CSV", type=["csv"])
-
-with st.sidebar:
-    st.header("Required fields")
-    st.write("Each valid row needs:")
-    for column in REQUIRED_COLUMNS:
-        st.write(f"- {column}")
-    st.write("Email is optional. Invalid email values are cleared rather than deleting the patient.")
-    st.divider()
-    st.write("NHS numbers are checked as 10 digit values and exported as text.")
-    st.write("Telephone numbers are kept only when they can be normalized to a UK mobile number.")
 
 
 if uploaded_file is None:
@@ -109,6 +98,7 @@ if not result.cleaned.empty:
             horizontal=True,
         )
         filename_prefix = st.text_input("Filename prefix", value="recallmate_batch")
+        zip_filename = filename_prefix.strip() or "recallmate_batch"
         safe_filename_prefix = sanitize_filename_prefix(filename_prefix)
         if safe_filename_prefix != filename_prefix.strip():
             st.caption(f"Files will use the safe prefix: {safe_filename_prefix}")
@@ -140,7 +130,7 @@ if not result.cleaned.empty:
         batch_columns[2].download_button(
             "Download batched CSVs",
             data=batches_to_zip_bytes(batches, safe_filename_prefix),
-            file_name=f"{safe_filename_prefix}.zip",
+            file_name=f"{zip_filename}.zip",
             mime="application/zip",
             disabled=not batches,
             type="primary",
